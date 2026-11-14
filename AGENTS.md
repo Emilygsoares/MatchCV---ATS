@@ -28,3 +28,11 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules (MatchCV)
+
+- No auth, no database: all user data lives in browser localStorage via `src/lib/use-local-state.ts` — the product is intentionally account-free.
+- AI calls go through `createServerFn`s in `src/lib/matchcv.functions.ts`, which lazily import the server-only gateway helper `src/lib/ai-gateway.server.ts` (Responses API, streamed, structured output) — keeps the key and prompts off the client.
+- Server functions return `{ ok, data | error }` instead of throwing, so friendly Portuguese errors reach the UI without the request error middleware swallowing them.
+- Overall match % is computed in code from AI dimension scores (`src/lib/scoring.ts`), and keyword lists are re-grounded against the literal resume text — keeps results tied to real input; covered by `src/lib/scoring.test.ts`.
+- PDF/DOCX parsing and DOCX/PDF export run in the browser with lazily imported libraries (pdfjs-dist, mammoth browser build, docx, jspdf) so nothing browser-only loads during SSR.
